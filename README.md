@@ -1,69 +1,125 @@
 # MSCS_634_Lab2
 MSCS_634_Lab2
-Overview
+Loading The DataSet
+wine = load_wine()
 
-This project investigates two supervised classification approaches, K-Nearest Neighbors (KNN) and Radius Neighbors, using the Wine dataset provided by scikit-learn.
+X = pd.DataFrame(
+    wine.data,
+    columns=wine.feature_names
+)
 
-The main purpose of the laboratory is to examine how different neighborhood settings influence classification accuracy.
+y = pd.Series(
+    wine.target,
+    name="target"
+)
 
-Dataset
+print("Dataset Shape:", X.shape)
 
-The experiment uses the Wine dataset from sklearn.datasets.
+print("\nFeature Names:")
+print(X.columns.tolist())
 
-The dataset contains:
+print("\nClass Distribution:")
+print(y.value_counts().sort_index())
 
-178 observations
-13 numerical predictor variables
-3 wine classes
+2. Training and Testing Data
 
-The dataset was divided into training and testing portions using an 80/20 split. Stratification was applied to preserve the class distribution.
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
 
-Data Preparation
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
 
-Because both classifiers rely on distance calculations, the numerical predictor variables were standardized before training.
+k_values = [1, 5, 11, 15, 21]
 
-The scaler was fitted using only the training data and then applied to both the training and testing sets.
+knn_results = []
 
-KNN Experiment
+for k in k_values:
 
-The KNN classifier was evaluated with:
+    model = KNeighborsClassifier(
+        n_neighbors=k
+    )
 
-k = 1
-k = 5
-k = 11
-k = 15
-k = 21
+    model.fit(
+        X_train_scaled,
+        y_train
+    )
 
-The accuracy obtained for each configuration was recorded and displayed in the notebook.
+    predictions = model.predict(
+        X_test_scaled
+    )
 
-Radius Neighbors Experiment
+    accuracy = accuracy_score(
+        y_test,
+        predictions
+    )
 
-The Radius Neighbors classifier was evaluated with:
+    knn_results.append({
+        "k": k,
+        "Accuracy": accuracy,
+        "Accuracy (%)": accuracy * 100
+    })
 
-Radius = 350
-Radius = 400
-Radius = 450
-Radius = 500
-Radius = 550
-Radius = 600
+knn_results_df = pd.DataFrame(knn_results)
 
-The resulting accuracy values were recorded and visualized.
+display(knn_results_df)
 
-Key Observations
+KNN Accuracy
 
-The KNN experiment demonstrates that the number of neighbors affects the classification decision. Smaller values of k make predictions more dependent on nearby individual observations, while larger values incorporate information from a broader neighborhood.
+plt.figure(figsize=(8,5))
 
-The Radius Neighbors experiment demonstrates a different approach to defining neighborhoods. The number of neighbors can vary from one observation to another because membership is determined by distance.
+plt.plot(
+    knn_results_df["k"],
+    knn_results_df["Accuracy (%)"],
+    marker="o"
+)
 
-The specified radius values are relatively large after standardization, so the resulting neighborhoods can contain many training observations. This is an important consideration when interpreting the Radius Neighbors results.
+plt.xlabel("Number of Neighbors (k)")
+plt.ylabel("Accuracy (%)")
+plt.title("KNN Accuracy for Different k Values")
 
-Challenges and Decisions
+plt.xticks(k_values)
+plt.grid(True)
 
-The primary preprocessing decision was to standardize the predictor variables because both algorithms use distance calculations.
+plt.show()
 
-The train-test split was made reproducible with random_state=42. Stratification was also used so that the three target classes would remain represented in both datasets.
+radius_values = [
+    350, 400, 450, 500, 550, 600
+]
 
-Another consideration was the scale of the radius values. The assigned values were retained according to the laboratory requirements, even though they may produce relatively broad neighborhoods after standardization.
+rnn_results = []
 
+for radius in radius_values:
 
+    model = RadiusNeighborsClassifier(
+        radius=radius,
+        outlier_label="most_frequent"
+    )
 
+    model.fit(
+        X_train_scaled,
+        y_train
+    )
+
+    predictions = model.predict(
+        X_test_scaled
+    )
+
+    accuracy = accuracy_score(
+        y_test,
+        predictions
+    )
+
+    rnn_results.append({
+        "Radius": radius,
+        "Accuracy": accuracy,
+        "Accuracy (%)": accuracy * 100
+    })
+
+rnn_results_df = pd.DataFrame(rnn_results)
+
+display(rnn_results_df)
