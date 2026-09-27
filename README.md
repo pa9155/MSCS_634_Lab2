@@ -123,3 +123,26 @@ for radius in radius_values:
 rnn_results_df = pd.DataFrame(rnn_results)
 
 display(rnn_results_df)
+
+KNN
+
+best_knn_index = knn_results_df["Accuracy"].idxmax()
+
+best_knn_k = knn_results_df.loc[
+    best_knn_index,
+    "k"
+]
+
+best_knn_accuracy = knn_results_df.loc[
+    best_knn_index,
+    "Accuracy (%)"
+]
+
+print(
+    f"Best observed KNN configuration: "
+    f"k = {best_knn_k}"
+)
+
+print(
+    f"Accuracy: {best_knn_accuracy:.2f}%"
+)
